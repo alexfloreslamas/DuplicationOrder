@@ -1,0 +1,96 @@
+# ---- Python ----
+# Byte-compiled files
+*.py[cod]
+__pycache__/
+*.so
+
+# Virtual environment directories
+venv/
+env/
+ENV/
+.venv/
+.pyenv/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Test coverage reports
+htmlcov/
+.tox/
+.nox/
+coverage.*
+.cache
+*.cover
+*.py,cover
+.hypothesis/
+
+# PyInstaller
+*.spec
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Pipenv
+Pipfile.lock
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre
+.pyre/
+
+# Pyright
+.pyright/
+
+# ---- IntelliJ IDEA ----
+# IDEA project files
+.idea/
+*.iml
+
+# IntelliJ’s data
+.idea_modules/
+workspace.xml
+tasks.xml
+
+# IDE artifacts and settings
+*.iws
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries/
+.idea/libraries/
+.idea/vcs.xml
+.idea/shelf/
+.idea/httpRequests/
+
+# ---- macOS ----
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# macOS file resource forks
+.Spotlight-V100
+.Trashes
+
+# ---- other files and folders ----
+sand/
