@@ -1,7 +1,6 @@
 from pandas import read_csv
 from revolutionhtl.nhxx_tools import read_nhxx
-
-import src.polytomy_identification.Utils as utils
+import Utils.Utils as utils
 
 # Parameters
 trees_path = '../input/tl_project.reconciliation.tsv'

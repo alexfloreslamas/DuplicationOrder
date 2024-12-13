@@ -1,7 +1,41 @@
 import pandas
 import numpy as np
 from math import log
+import networkx as nx
+from revolutionhtl.nxTree import induced_colors
+from src.polytomy_identification.TreePolytomies import TreePolytomies
 from revolutionhtl.parse_prt import load_all_hits_raw, normalize_scores
+
+
+def is_polytomi(T, node):
+    return len(T[node]) > 2
+
+
+def get_polytomies(T):
+    return [node for node in T if is_polytomi(T, node)]
+
+
+def get_trees_with_polytomies(gene_trees: nx.DiGraph) -> list[TreePolytomies]:
+    trees_with_polytomies: list[TreePolytomies] = []
+
+    for og, tree in enumerate(gene_trees):
+        nodes_with_polytomies = get_polytomies(tree)
+
+        if nodes_with_polytomies:
+            X: dict[
+                int, dict[
+                    int, list[int | str]
+                ]
+            ] = {x: {} for x in nodes_with_polytomies}
+
+            for x in nodes_with_polytomies:
+                Y = list(tree.successors(x))
+                for y_i in Y:
+                    X[x][y_i] = induced_colors(tree, y_i, 'label')
+
+            trees_with_polytomies.append(TreePolytomies(og, tree, X))
+
+    return trees_with_polytomies
 
 
 def load_hits_compute_distance_pairs(hits_path: str) -> pandas.Series:
@@ -31,22 +65,3 @@ def get_pair_distance(distance_pairs_series: pandas.Series, leaf_1: str, leaf_2:
     """
     pair = frozenset({leaf_1, leaf_2})
     return distance_pairs_series.get(pair, np.nan)
-
-
-if __name__ == "__main__":
-    # Path to the hits file.
-    hits_path = '../input/tl_project_alignment_all_vs_all/'
-    distance_pairs = load_hits_compute_distance_pairs(hits_path)
-
-    # Example leaf identifiers
-    l1: str = 'noD_5_3_1_1|G4_4'
-    l2: str = 'noD_5_3_1_1|G1_1'
-    l3: str = 'I do not exist'
-
-    # Query distances
-    print(get_pair_distance(distance_pairs, l1, l2))    # Expected: float, say abc.def...
-    print(get_pair_distance(distance_pairs, l2, l1))    # Same as above, i.e, abc.def...
-    print(get_pair_distance(distance_pairs, l1, l3))    # Expected: np.nan
-    print(get_pair_distance(distance_pairs, l3, l1))    # Expected: np.nan
-    print(get_pair_distance(distance_pairs, l2, l3))    # Expected: np.nan
-    print(get_pair_distance(distance_pairs, l3, l2))    # Expected: np.nan
