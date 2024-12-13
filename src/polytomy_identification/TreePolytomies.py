@@ -1,4 +1,5 @@
 import networkx as nx
+from revolutionhtl.nhxx_tools import get_nhx
 
 
 class TreePolytomies:
@@ -45,5 +46,6 @@ class TreePolytomies:
             Y = self.get_ys(x)
             for y_i in Y:
                 text += f"\t\t{y_i = }: C_i = {self.get_cluster(x, y_i)}\n"
+        text += f"\tNewick: {get_nhx(self.get_tree(), name_attr='label')}\n"
 
         return text
