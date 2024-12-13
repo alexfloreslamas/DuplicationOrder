@@ -3,7 +3,12 @@ import pandas as pd
 import src.Utils.Utils as utils
 
 
-def compute_distance_matrix(PD: pd.Series, C: list[list[str]], Y: list[str]) -> np.ndarray:
+def __text__(D:np.ndarray, Y: list[int | str]) ->  str:
+    return f"Taxa for matrix D: {Y}\n" \
+           f"Distance matrix D:\n{D}\n"
+
+
+def compute_distance_matrix(PD: pd.Series, C: list[list[str]], Y: list[str]) -> tuple[np.ndarray, str]:
     """
     Compute the estimated distance matrix D based on the given "estimate" conditions.
 
@@ -48,7 +53,7 @@ def compute_distance_matrix(PD: pd.Series, C: list[list[str]], Y: list[str]) -> 
 
                 D[j, i] = D[i, j]  # Ensure symmetry
 
-    return D
+    return D, __text__(D, Y)
 
 
 def test_compute_distance_matrix() -> None:
@@ -151,10 +156,9 @@ def test_compute_distance_matrix() -> None:
     # Compute distance matrix
     try:
         for PD, C, Y in test_cases:
-            D = compute_distance_matrix(PD, C, Y)
-            print("Taxa for matrix D:", Y)
-            print("Distance matrix D:")
-            print(f"{D}\n")
+            D, text = compute_distance_matrix(PD, C, Y)
+            print(text)
+            # print(f"{D}\n")
     except ValueError as e:
         print(f"Error: {e}")
 
