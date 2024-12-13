@@ -19,3 +19,6 @@ if __name__ == "__main__":
     print("Example:")
     tp = trees_with_polytomies[0]
     print(tp)
+
+    # for tree in trees_with_polytomies:
+    #     print(tree)
