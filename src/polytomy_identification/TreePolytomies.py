@@ -38,14 +38,13 @@ class TreePolytomies:
         return self._X[x][y_i]
 
     def __str__(self):
-        text = f"OG = {self.get_og()}\n"
-        text += f"\ttree = {self.get_tree()}\n"
-        text += f"\tnodes with polytomies = {self.get_nodes_with_polytomies()}\n"
+        text = f"OG = {self.get_og()}\n" \
+               f"\ttree = {self.get_tree()}\n" \
+               f"\tnodes with polytomies = {self.get_nodes_with_polytomies()}\n"
+
         for x in self.get_nodes_with_polytomies():
             text += f"\t{x = }\n"
-            Y = self.get_ys(x)
-            for y_i in Y:
+            for y_i in self.get_ys(x):
                 text += f"\t\t{y_i = }: C_i = {self.get_cluster(x, y_i)}\n"
-        text += f"\tNewick: {get_nhx(self.get_tree(), name_attr='label')}\n"
 
-        return text
+        return f"{text}\tNewick: {get_nhx(self.get_tree(), name_attr='label')}\n"
