@@ -31,7 +31,7 @@ def get_trees_with_polytomies(gene_trees: nx.DiGraph) -> list[TreePolytomies]:
             for x in nodes_with_polytomies:
                 Y = list(tree.successors(x))
                 for y_i in Y:
-                    X[x][y_i] = induced_colors(tree, y_i, 'label')
+                    X[x][y_i] = list(induced_colors(tree, y_i, 'label'))
 
             trees_with_polytomies.append(TreePolytomies(og, tree, X))
 
