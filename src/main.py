@@ -60,5 +60,5 @@ if __name__ == "__main__":
     solved_tree = utils.update_tree_with_newick(tp.get_tree(), node=x, newick_str=newick)
     print(utils.tree_to_string(solved_tree, 0, show_labels=True))
 
+    print(f"New Newick: {utils.transform_newick(get_nhx(solved_tree, 1))}")
 
-    print(get_nhx(solved_tree, 1))
