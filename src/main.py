@@ -1,3 +1,4 @@
+import networkx as nx
 import Utils.Utils as utils
 from pandas import read_csv
 from revolutionhtl.nhxx_tools import read_nhxx
@@ -53,3 +54,6 @@ if __name__ == "__main__":
 
     Y_str = [str(y) if isinstance(y, int) else y for y in Y]
     print(f"Newick format: {nnj.resolve_tree_with_nan(D, Y_str, x)}\n")
+
+    print(list(nx.dfs_postorder_nodes(tp.get_tree(), source=0)))
+    print(utils.tree_to_string(tp.get_tree(), 0, show_labels=True))

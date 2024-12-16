@@ -76,3 +76,27 @@ def info(X: list[int], x: int, Y: list[int], C: list[list[str]]) -> str:
         text += f"\t{c},\n"
     text += "]"
     return text
+
+
+def tree_to_string(D: nx.DiGraph, node, level=0, prefix="", show_labels=True) -> str:
+    # Get the label of the node if it exists, otherwise use the node ID
+    label = D.nodes[node].get('label', str(node))
+
+    # Create the current line of the tree
+    connector = "|-" if level > 0 else ""  # Add '|-' only if not the root
+    line = f"{prefix}{connector}{node} ({label})" if show_labels else f"{prefix}{connector}{node}"
+
+    # Initialize the tree string with the current node
+    tree_str = line + "\n"
+
+    # Prepare the prefix for the next level
+    new_prefix = prefix + ("| " if level > 0 else "  ")  # Add '| ' or '  '
+
+    # Recurse for children and accumulate the result
+    children = list(D.successors(node))
+    for i, child in enumerate(children):
+        is_last = i == len(children) - 1  # Adjust prefix for the last child
+        child_prefix = new_prefix if not is_last else prefix + "  "
+        tree_str += tree_to_string(D, child, level + 1, child_prefix, show_labels)
+
+    return tree_str
