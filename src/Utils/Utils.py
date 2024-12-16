@@ -2,6 +2,8 @@ import pandas
 import numpy as np
 from math import log
 import networkx as nx
+from Bio import Phylo
+from io import StringIO
 from revolutionhtl.nxTree import induced_colors
 from src.polytomy_identification.TreePolytomies import TreePolytomies
 from revolutionhtl.parse_prt import load_all_hits_raw, normalize_scores
@@ -100,3 +102,78 @@ def tree_to_string(D: nx.DiGraph, node, level=0, prefix="", show_labels=True) ->
         tree_str += tree_to_string(D, child, level + 1, child_prefix, show_labels)
 
     return tree_str
+
+
+def update_tree_with_newick(D, node, newick_str) -> nx.DiGraph:
+    """
+    Resolve a polytomy in a NetworkX DiGraph using a Newick string and return a new graph.
+
+    Args:
+        D (nx.DiGraph): Original directed graph.
+        node (int): Node with a polytomy to resolve.
+        newick_str (str): Newick string representing the resolved subtree.
+
+    Returns:
+        nx.DiGraph: A new graph with the resolved polytomy.
+    """
+    # Create a copy of the original graph
+    new_graph = D.copy()
+
+    # Parse the Newick string into a tree
+    handle = StringIO(newick_str)
+    tree = Phylo.read(handle, "newick")
+
+    # Generate new nodes for internal nodes introduced in the Newick tree
+    new_node_id = max(new_graph.nodes) + 1  # Start creating new nodes from max existing ID + 1
+    new_node_map = {}
+
+    def map_newick_clade(clade):
+        nonlocal new_node_id
+        if clade.is_terminal():
+            # Terminal nodes are the same as the original nodes
+            return int(clade.name)
+        else:
+            # Create a new internal node
+            new_internal_node = new_node_id
+            new_node_id += 1
+            new_node_map[clade] = new_internal_node
+            return new_internal_node
+
+    # Traverse the Newick tree to add the resolved structure
+    def add_newick_edges(clade, parent):
+        if clade.is_terminal():
+            # Terminal node: add edge to the terminal node
+            return int(clade.name)
+        else:
+            # Internal node: add edge to a new internal node
+            internal_node = map_newick_clade(clade)
+            for child in clade.clades:
+                child_node = add_newick_edges(child, internal_node)
+                new_graph.add_edge(internal_node, child_node)
+            return internal_node
+
+    # Remove old edges from the polytomy node in the new graph
+    for child in list(new_graph.successors(node)):
+        new_graph.remove_edge(node, child)
+
+    # Add the resolved structure to the graph
+    root_clade = tree.clade
+    clades = root_clade.clades
+
+    if len(clades) >= 1:
+        # First child of the Newick tree becomes a direct child of `node`
+        first_child = add_newick_edges(clades[0], node)
+        new_graph.add_edge(node, first_child)
+
+    if len(clades) > 1:
+        # Second clade introduces a new internal node
+        new_internal_node = new_node_id
+        new_node_id += 1
+        new_graph.add_edge(node, new_internal_node)
+
+        # Add the subtrees rooted at the second clade
+        for child_clade in clades[1].clades:
+            child_node = add_newick_edges(child_clade, new_internal_node)
+            new_graph.add_edge(new_internal_node, child_node)
+
+    return new_graph
