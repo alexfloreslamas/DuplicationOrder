@@ -1,5 +1,5 @@
 import networkx as nx
-import Utils.Utils as utils
+import src.Utils.Utils as utils
 
 
 if __name__ == "__main__":
