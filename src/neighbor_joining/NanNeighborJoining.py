@@ -125,7 +125,8 @@ def to_newick(tree_data: dict, root_name: str = "X") -> str:
         unrooted_newick = resolved_tree
 
     # Add the specified root node
-    return f"({unrooted_newick}){root_name};"
+    # return f"({unrooted_newick}){root_name};"
+    return f"{unrooted_newick}{root_name};"   # I believe this should be the new return
 
 
 def resolve_tree_with_nan(full_D: np.ndarray, full_taxa: list[str], root_name: str) -> str:
