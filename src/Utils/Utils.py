@@ -1,3 +1,4 @@
+import re
 import pandas
 import numpy as np
 from math import log
@@ -177,3 +178,55 @@ def update_tree_with_newick(D, node, newick_str) -> nx.DiGraph:
             new_graph.add_edge(new_internal_node, child_node)
 
     return new_graph
+
+def transform_newick(input_newick):
+    """
+    Transforms a Newick string by reordering attributes inside square brackets.
+
+    Specifically, the function:
+      - Reorders attributes in the format: 'label[node_id=...;species=...]'
+      - Handles attributes appearing in any order: species, node_id, label
+      - Ensures the output format always starts with 'label' followed by 'node_id' and 'species'.
+
+    Args:
+        input_newick (str): The original Newick string.
+
+    Returns:
+        str: The transformed Newick string with reordered attributes.
+    """
+
+    # Function to parse and reorder attributes
+    def reorder_attributes(match):
+        """
+        Extracts and reorders attributes found within square brackets.
+
+        Args:
+            match (re.Match): A regex match object containing attributes inside square brackets.
+
+        Returns:
+            str: A string with reordered attributes in the desired format.
+        """
+        content = match.group(1)  # Get the full content inside the brackets
+        # Split the attributes by ';' and create a key-value dictionary
+        attributes = dict(kv.split('=') for kv in content.split(';') if kv)
+
+        # Extract specific attributes (order is important)
+        species = attributes.get('species', None)
+        node_id = attributes.get('node_id', None)
+        label = attributes.get('label', None)
+
+        # Construct the replacement string in the desired order
+        replacement = f"{label or ''}[node_id={node_id or ''}"
+        if species:
+            replacement += f";species={species}"
+        replacement += "]"
+
+        return replacement
+
+    # Regex pattern to match anything inside square brackets '[...]'
+    pattern = re.compile(r'\[(.*?)\]')
+
+    # Apply the transformation using the nested reorder_attributes function
+    output_newick = pattern.sub(reorder_attributes, input_newick)
+
+    return output_newick
