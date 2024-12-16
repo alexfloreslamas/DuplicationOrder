@@ -65,3 +65,14 @@ def get_pair_distance(distance_pairs_series: pandas.Series, leaf_1: str, leaf_2:
     """
     pair = frozenset({leaf_1, leaf_2})
     return distance_pairs_series.get(pair, np.nan)
+
+
+def info(X: list[int], x: int, Y: list[int], C: list[list[str]]) -> str:
+    text: str = f"{X = }\n" \
+                f"{x = }\n" \
+                f"{Y = }\n" \
+                f"C = [\n"
+    for c in C:
+        text += f"\t{c},\n"
+    text += "]"
+    return text

@@ -5,6 +5,9 @@ import src.neighbor_joining.DMSeries as dms
 import src.neighbor_joining.NanNeighborJoining as nnj
 
 
+
+
+
 if __name__ == "__main__":
     # Path to the hits file.
     hits_path = '../input/tl_project_alignment_all_vs_all/'             # Path to the hits file
@@ -37,18 +40,11 @@ if __name__ == "__main__":
     print("---"*11)
 
     X: list[int] = tp.get_nodes_with_polytomies()
-    x = X[0]
+    x: int = X[0]
     Y: list[int] = tp.get_ys(x)
     C: list[list[str]] = [tp.get_cluster(x, y_i) for y_i in Y]
 
-    print(f"{X = }")
-    print(f"{x = }")
-    print(f"{Y = }")
-    print(f"{C = }")
-
-    for c in C:
-        print(f"{c}, {type(c)}")
-        print(type(c[0]))
+    print(utils.info(X, x, Y, C))
 
     D, info = dms.compute_distance_matrix(distance_pairs, C, Y)
     print(info)
