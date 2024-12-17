@@ -46,7 +46,7 @@ if __name__ == "__main__":
     # TODO: Handle the case where the polytomy forms a simple star tree.
     # In such cases, distances should be taken as-is (raw distances), and no "distance estimates" should be computed.
     # This can likely be addressed with a conditional check (e.g., an 'if' statement).
-    D, info = dms.compute_distance_matrix(distance_pairs, C, Y)
+    D, _, info = dms.compute_distance_matrix(distance_pairs, C, Y)
     print(f"{info}\n{'-'*80}\n")
 
     # Resolve polytomy using NJ

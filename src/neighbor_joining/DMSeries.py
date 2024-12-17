@@ -3,12 +3,32 @@ import pandas as pd
 import src.Utils.Utils as utils
 
 
-def __text__(D:np.ndarray, Y: list[int | str]) ->  str:
-    return f"Taxa for matrix D: {Y}\n" \
-           f"Distance matrix D:\n{D}\n"
+def _add_missing_pair(my_dict:dict[str, list[str]], key: str, value: str):
+    if key in my_dict:
+        my_dict[key].append(value)
+    else:
+        my_dict[key] = [value]
+
+    return my_dict
 
 
-def compute_distance_matrix(PD: pd.Series, C: list[list[str]], Y: list[str]) -> tuple[np.ndarray, str]:
+def __text__(D:np.ndarray, Y: list[int | str], missing_pairs: dict[str, list[str]]) ->  str:
+    text = f"Taxa for matrix D: {Y}\n" \
+           f"Distance matrix D:\n{D}\n" \
+           f"Missing pairs:"
+
+    if missing_pairs:
+        text += "\n"
+        for key in missing_pairs.keys():
+            text += f"\t{key}: {missing_pairs[key]}\n"
+    else:
+        text += " {}"
+    return text
+
+
+def compute_distance_matrix(
+        PD: pd.Series, C: list[list[str]], Y: list[str]
+) -> tuple[np.ndarray, dict[str, list[str]], str]:
     """
     Compute the estimated distance matrix D based on the given "estimate" conditions.
 
@@ -17,6 +37,15 @@ def compute_distance_matrix(PD: pd.Series, C: list[list[str]], Y: list[str]) -> 
     :param Y: list of taxa labels corresponding to each cluster in C.
     :return: Symmetric distance matrix D as a 2D numpy array.
     """
+
+    missing_pairs: dict[str, list[str]] = {}
+    # key = 'Y[i],Y[j]'
+    # value = [ 'zi_1,zj_2', ...]
+    #
+    # missing_pairs = {
+    #     'Y[i],Y[j]': [ 'zi_1,zj_2', ...]
+    # }
+
     # Ensure Y matches the length of C
     if len(C) != len(Y):
         raise ValueError("The length of taxa labels (Y) must match the number of clusters (C).")
@@ -42,8 +71,10 @@ def compute_distance_matrix(PD: pd.Series, C: list[list[str]], Y: list[str]) -> 
                                 numerator += value
                             else:  # PD[pair] = NaN
                                 total -= 1
+                                missing_pairs = _add_missing_pair(missing_pairs, f"{Y[i]},{Y[j]}", f"{z_i},{z_j}")
                         else:  # Pair not in PD
                             total -= 1
+                            missing_pairs = _add_missing_pair(missing_pairs, f"{Y[i]},{Y[j]}", f"{z_i},{z_j}")
 
                 # Avoid division by zero
                 if total > 0:
@@ -53,7 +84,7 @@ def compute_distance_matrix(PD: pd.Series, C: list[list[str]], Y: list[str]) -> 
 
                 D[j, i] = D[i, j]  # Ensure symmetry
 
-    return D, __text__(D, Y)
+    return D, missing_pairs, __text__(D, Y, missing_pairs)
 
 
 def test_compute_distance_matrix() -> None:
@@ -156,8 +187,9 @@ def test_compute_distance_matrix() -> None:
     # Compute distance matrix
     try:
         for PD, C, Y in test_cases:
-            D, text = compute_distance_matrix(PD, C, Y)
+            D, missing_pair, text = compute_distance_matrix(PD, C, Y)
             print(text)
+            # print(missing_pair)
             # print(f"{D}\n")
     except ValueError as e:
         print(f"Error: {e}")
