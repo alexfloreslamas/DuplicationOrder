@@ -1,5 +1,3 @@
-import networkx as nx
-import re
 import Utils.Utils as utils
 from pandas import read_csv
 from revolutionhtl.nhxx_tools import read_nhxx, get_nhx
@@ -8,17 +6,17 @@ import src.neighbor_joining.NanNeighborJoining as nnj
 
 
 if __name__ == "__main__":
-    # Path to the hits file.
-    hits_path = '../input/tl_project_alignment_all_vs_all/'             # Path to the hits file
-    trees_path = '../input/tl_project.reconciliation.tsv'               # Path to trees
+    # Load the hits and trees data from input files
+    hits_path = '../input/tl_project_alignment_all_vs_all/'
+    trees_path = '../input/tl_project.reconciliation.tsv'
 
     distance_pairs = utils.load_hits_compute_distance_pairs(hits_path)  # Load distances
     gTrees = read_csv(trees_path, sep='\t')                             # Load trees
     gTrees = gTrees.set_index('OG').tree.apply(read_nhxx)               # Load trees
 
+    print(f"{len(gTrees) = }")
     trees_with_polytomies = utils.get_trees_with_polytomies(gTrees)     # Identify those trees with polytomies
-    print(f"{len(trees_with_polytomies) = }")
-    print(">>>"*11)
+    print(f"{len(trees_with_polytomies) = }\n\n{'-'*80}\n")
 
     # for idx, tp in enumerate(trees_with_polytomies):
     #     print(f"{idx = }")
@@ -30,35 +28,39 @@ if __name__ == "__main__":
     #         D, info = dms.compute_distance_matrix(distance_pairs, C, Y)
     #         print(info)
     #
-    #     print("---"*11)
+    #     print(f"{'-'*80}\n")
 
+    # Analyze the polytomy at a specific index
     idx = 29
     print(f"{idx = }")
     tp = trees_with_polytomies[idx]
-    print(tp)
-    print("---"*11)
+    print(f"{tp}\n{'-'*80}\n")
 
     X: list[int] = tp.get_nodes_with_polytomies()
     x: int = X[0]
     Y: list[int] = tp.get_ys(x)
     C: list[list[str]] = [tp.get_cluster(x, y_i) for y_i in Y]
-
     print(utils.info(X, x, Y, C))
 
+    # Computes the distance matrix for the Neighbor-Joining (NJ) algorithm.
+    # TODO: Handle the case where the polytomy forms a simple star tree.
+    # In such cases, distances should be taken as-is (raw distances), and no "distance estimates" should be computed.
+    # This can likely be addressed with a conditional check (e.g., an 'if' statement).
     D, info = dms.compute_distance_matrix(distance_pairs, C, Y)
-    print(info)
+    print(f"{info}\n{'-'*80}\n")
 
-    print("---"*11)
-
+    # Resolve polytomy using NJ
     Y_str = [str(y) if isinstance(y, int) else y for y in Y]
-    newick = nnj.resolve_tree_with_nan(D, Y_str, x)
-    print(f"Newick format: {newick}\n")
+    resolved_subtree_newick = nnj.resolve_tree_with_nan(D, Y_str, x)
+    print(f"{resolved_subtree_newick = }\n")
 
+    # Print in-tree and resolved out-tree
+    rho: int = 0
+    original_tree = tp.get_tree()
+    print(f"in-tree:\n{utils.tree_to_string(original_tree, rho, show_labels=True)}")        # full tree with polytomies
+    full_nx_resolved_tree = utils.update_tree_with_newick(original_tree, node=x, newick_str=resolved_subtree_newick)
+    print(f"ou-tree:\n{utils.tree_to_string(full_nx_resolved_tree, rho, show_labels=True)}")    # full resolved tree
 
-    print(utils.tree_to_string(tp.get_tree(), 0, show_labels=True))
-
-    solved_tree = utils.update_tree_with_newick(tp.get_tree(), node=x, newick_str=newick)
-    print(utils.tree_to_string(solved_tree, 0, show_labels=True))
-
-    print(f"New Newick: {utils.transform_newick(get_nhx(solved_tree, 1))}")
-
+    # Newick representations
+    print(f"in-Newick: {get_nhx(original_tree, name_attr='label')}")                        # tree with polytomies
+    print(f"re-Newick: {utils.transform_newick(get_nhx(full_nx_resolved_tree, 1))}")        # resolved tree
