@@ -1,7 +1,7 @@
 import Utils.Utils as utils
 from pandas import read_csv
-from revolutionhtl.nhxx_tools import read_nhxx, get_nhx
 import src.neighbor_joining.DMSeries as dms
+from revolutionhtl.nhxx_tools import read_nhxx, get_nhx
 import src.neighbor_joining.NanNeighborJoining as nnj
 
 
@@ -18,17 +18,7 @@ if __name__ == "__main__":
     trees_with_polytomies = utils.get_trees_with_polytomies(gTrees)     # Identify those trees with polytomies
     print(f"{len(trees_with_polytomies) = }\n\n{'-'*80}\n")
 
-    # for idx, tp in enumerate(trees_with_polytomies):
-    #     print(f"{idx = }")
-    #     X: list[int] = tp.get_nodes_with_polytomies()
-    #     print(tp)
-    #     for x in X:
-    #         Y: list[int] = tp.get_ys(x)
-    #         C: list[list[str]] = [tp.get_cluster(x, y_i) for y_i in Y]
-    #         D, _, info = dms.compute_distance_matrix(distance_pairs, C, Y)
-    #         print(info)
-    #
-    #     print(f"{'-'*80}\n")
+    # utils.print_all_trees_with_polytomies(trees_with_polytomies, distance_pairs, verbose=True)
 
     # Analyze the polytomy at a specific index
     idx = 29

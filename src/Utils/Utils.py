@@ -5,6 +5,7 @@ from math import log
 import networkx as nx
 from Bio import Phylo
 from io import StringIO
+import src.neighbor_joining.DMSeries as dms
 from revolutionhtl.nxTree import induced_colors
 from src.polytomy_identification.TreePolytomies import TreePolytomies
 from revolutionhtl.parse_prt import load_all_hits_raw, normalize_scores
@@ -234,3 +235,20 @@ def transform_newick(input_newick):
     output_newick = pattern.sub(reorder_attributes, input_newick)
 
     return output_newick
+
+
+def print_all_trees_with_polytomies(
+        trees_with_polytomies:list[TreePolytomies], distance_pairs: pandas.Series, verbose=True
+) -> None:
+    for idx, tp in enumerate(trees_with_polytomies):
+        print(f"{idx = }")
+        X: list[int] = tp.get_nodes_with_polytomies()
+        print(tp)
+        if verbose:
+            for x in X:
+                Y: list[int] = tp.get_ys(x)
+                C: list[list[str]] = [tp.get_cluster(x, y_i) for y_i in Y]
+                D, _, info = dms.compute_distance_matrix(distance_pairs, C, Y)
+                print(info)
+
+        print(f"{'-'*80}\n")
