@@ -1,3 +1,4 @@
+import os
 import re
 import pandas
 import numpy as np
@@ -252,3 +253,65 @@ def print_all_trees_with_polytomies(
                 print(info)
 
         print(f"{'-'*80}\n")
+
+
+def extract_file_name_from_newick(newick):
+    """
+    Extracts, for example, the '5_10_4_2' part from a Newick string with a specific pattern.
+
+    Args:
+        newick (str): The Newick string containing patterns like 'noD_5_10_4_2|...'.
+
+    Returns:
+        str: The extracted '5_10_4_2' value, or None if not found.
+    """
+    # Regular expression to match the pattern 'noD_' followed by numbers separated by underscores
+    pattern = r'noD_(\d+_\d+_\d+_\d+)\|'
+
+    # Search for the pattern in the Newick string
+    match = re.search(pattern, newick)
+    if match:
+        return match.group(1)  # Return the captured group (5_10_4_2)
+    else:
+        return None  # Return None if no match is found
+
+
+def read_newick_from_file(base_path, file_name):
+    """
+    Reads a Newick string from the specified file. The folder name is deduced
+    from the file name (ga_b_c_d.pruned.tree format).
+
+    Args:
+        base_path (str): Path to the root folder (e.g., 'input/true_gene_trees/').
+        file_name (str): Name of the file in the format 'ga_b_c_d.pruned.tree'.
+
+    Returns:
+        str: The Newick string from the file, or None if the file is not found or invalid.
+    """
+    # Validate and parse the file name using regex
+    pattern = re.compile(r"^g(\d+)_(\d+)_(\d+)_(\d+)\.pruned\.tree$")
+    match = pattern.match(file_name)
+
+    if not match:
+        print(f"Invalid file name format: {file_name}")
+        return None
+
+    # Extract a, b, c, d from the file name
+    a, b, c, d = match.groups()
+
+    # Deduce the folder name
+    folder_name = f"{a}_{b}_{c}_"
+
+    # Construct the full file path
+    file_path = os.path.join(base_path, folder_name, file_name)
+
+    # Check if the file exists
+    if not os.path.isfile(file_path):
+        print(f"File not found: {file_path}")
+        return None
+
+    # Read the Newick string from the file
+    with open(file_path, 'r') as f:
+        real_newick = f.read().strip()
+
+    return real_newick

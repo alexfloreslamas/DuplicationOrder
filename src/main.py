@@ -4,11 +4,14 @@ import src.neighbor_joining.DMSeries as dms
 from revolutionhtl.nhxx_tools import read_nhxx, get_nhx
 import src.neighbor_joining.NanNeighborJoining as nnj
 
+
 def main():
-    # Load the hits and trees data from input files
+    # File paths
     hits_path = '../input/tl_project_alignment_all_vs_all/'
     trees_path = '../input/tl_project.reconciliation.tsv'
+    real_trees_base_path = "../input/true_gene_trees/"
 
+    # Load the hits and gtrees data from input files
     distance_pairs = utils.load_hits_compute_distance_pairs(hits_path)  # Load distances
     gTrees = read_csv(trees_path, sep='\t')                             # Load trees
     gTrees = gTrees.set_index('OG').tree.apply(read_nhxx)               # Load trees
@@ -21,6 +24,8 @@ def main():
 
     # Analyze the polytomy at a specific index
     idx = 29
+    # idx = 32
+    # idx = 55
     print(f"{idx = }")
     tp = trees_with_polytomies[idx]
     print(f"{tp}\n{'-'*80}\n")
@@ -54,8 +59,11 @@ def main():
     print(f"nj-tree:\n{utils.tree_to_string(full_nx_resolved_tree, rho, show_labels=True)}")    # full resolved tree
 
     # Newick representations
-    print(f"in-Newick: {get_nhx(original_tree, name_attr='label')}")                        # tree with polytomies
-    print(f"nj-Newick: {utils.transform_newick(get_nhx(full_nx_resolved_tree, 1))}")        # resolved tree
+    in_tree_newick = get_nhx(original_tree, name_attr='label')
+    print(f"in-Newick: {in_tree_newick}")                                                       # tree with polytomies
+    print(f"nj-Newick: {utils.transform_newick(get_nhx(full_nx_resolved_tree, 1))}")                # resolved tree
+    real_tree_file_name = f"g{utils.extract_file_name_from_newick(in_tree_newick)}.pruned.tree"
+    print(f"re-Newick: {utils.read_newick_from_file(real_trees_base_path, real_tree_file_name)}")   # real tree
 
 
 if __name__ == "__main__":
