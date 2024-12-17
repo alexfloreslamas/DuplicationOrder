@@ -171,6 +171,10 @@ def update_tree_with_newick(D, node, newick_str) -> nx.DiGraph:
         new_internal_node = new_node_id
         new_node_id += 1
         new_graph.add_edge(node, new_internal_node)
+        # Add the 'label' attribute to the new_internal_node.
+        new_graph.nodes[new_internal_node]['label'] = 'D'       # Discussed with Toño. 17/12/2024
+        new_graph.nodes[new_internal_node]['node_id'] = None    # TODO: Could be new_internal_node - 1
+        new_graph.nodes[new_internal_node]['species'] = None
 
         # Add the subtrees rooted at the second clade
         for child_clade in clades[1].clades:
