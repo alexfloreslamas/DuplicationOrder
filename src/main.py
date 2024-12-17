@@ -18,17 +18,17 @@ if __name__ == "__main__":
     trees_with_polytomies = utils.get_trees_with_polytomies(gTrees)     # Identify those trees with polytomies
     print(f"{len(trees_with_polytomies) = }\n\n{'-'*80}\n")
 
-    # for idx, tp in enumerate(trees_with_polytomies):
-    #     print(f"{idx = }")
-    #     X: list[int] = tp.get_nodes_with_polytomies()
-    #     print(tp)
-    #     for x in X:
-    #         Y: list[int] = tp.get_ys(x)
-    #         C: list[list[str]] = [tp.get_cluster(x, y_i) for y_i in Y]
-    #         D, info = dms.compute_distance_matrix(distance_pairs, C, Y)
-    #         print(info)
-    #
-    #     print(f"{'-'*80}\n")
+    for idx, tp in enumerate(trees_with_polytomies):
+        print(f"{idx = }")
+        X: list[int] = tp.get_nodes_with_polytomies()
+        print(tp)
+        for x in X:
+            Y: list[int] = tp.get_ys(x)
+            C: list[list[str]] = [tp.get_cluster(x, y_i) for y_i in Y]
+            D, _, info = dms.compute_distance_matrix(distance_pairs, C, Y)
+            print(info)
+
+        print(f"{'-'*80}\n")
 
     # Analyze the polytomy at a specific index
     idx = 29
@@ -58,7 +58,11 @@ if __name__ == "__main__":
     rho: int = 0
     original_tree = tp.get_tree()
     print(f"in-tree:\n{utils.tree_to_string(original_tree, rho, show_labels=True)}")        # full tree with polytomies
+
+    # Creates a new nx.DiGraph tree with the polytomy at node 'x' resolved using the provided Newick string.
+    # The original tree remains unchanged.
     full_nx_resolved_tree = utils.update_tree_with_newick(original_tree, node=x, newick_str=resolved_subtree_newick)
+
     print(f"ou-tree:\n{utils.tree_to_string(full_nx_resolved_tree, rho, show_labels=True)}")    # full resolved tree
 
     # Newick representations
