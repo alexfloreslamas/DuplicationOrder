@@ -35,7 +35,7 @@ def compute_distance_matrix(
     :param PD: pandas Series where the index is frozensets of IDs (tuples) and values are floats or np.nan.
     :param C: list of lists, where each sublist contains IDs corresponding to a cluster.
     :param Y: list of taxa labels corresponding to each cluster in C.
-    :return: Symmetric distance matrix D as a 2D numpy array.
+    :return: Symmetric distance matrix D as a 2D numpy array, a dictionary with missing pairs and a str representation
     """
 
     missing_pairs: dict[str, list[str]] = {}
