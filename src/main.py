@@ -4,8 +4,7 @@ import src.neighbor_joining.DMSeries as dms
 from revolutionhtl.nhxx_tools import read_nhxx, get_nhx
 import src.neighbor_joining.NanNeighborJoining as nnj
 
-
-if __name__ == "__main__":
+def main():
     # Load the hits and trees data from input files
     hits_path = '../input/tl_project_alignment_all_vs_all/'
     trees_path = '../input/tl_project.reconciliation.tsv'
@@ -57,3 +56,7 @@ if __name__ == "__main__":
     # Newick representations
     print(f"in-Newick: {get_nhx(original_tree, name_attr='label')}")                        # tree with polytomies
     print(f"nj-Newick: {utils.transform_newick(get_nhx(full_nx_resolved_tree, 1))}")        # resolved tree
+
+
+if __name__ == "__main__":
+    main()
