@@ -59,11 +59,14 @@ def main():
     print(f"nj-tree:\n{utils.tree_to_string(full_nx_resolved_tree, rho, show_labels=True)}")    # full resolved tree
 
     # Newick representations
-    in_tree_newick = get_nhx(original_tree, name_attr='label')
+    in_tree_newick:         str = get_nhx(original_tree, name_attr='label')
+    nj_tree_newick:         str = utils.transform_newick(get_nhx(full_nx_resolved_tree, 1))
+    real_tree_file_name:    str = f"g{utils.extract_file_name_from_newick(in_tree_newick)}.pruned.tree"
+    re_tree_newick:         str = utils.read_newick_from_file(real_trees_base_path, real_tree_file_name)
+
     print(f"in-Newick: {in_tree_newick}")                                                       # tree with polytomies
-    print(f"nj-Newick: {utils.transform_newick(get_nhx(full_nx_resolved_tree, 1))}")                # resolved tree
-    real_tree_file_name = f"g{utils.extract_file_name_from_newick(in_tree_newick)}.pruned.tree"
-    print(f"re-Newick: {utils.read_newick_from_file(real_trees_base_path, real_tree_file_name)}")   # real tree
+    print(f"nj-Newick: {nj_tree_newick}")                                                       # resolved tree
+    print(f"re-Newick: {re_tree_newick}")                                                       # real tree
 
 
 if __name__ == "__main__":
