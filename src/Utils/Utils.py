@@ -7,7 +7,9 @@ import networkx as nx
 from Bio import Phylo
 from io import StringIO
 import src.neighbor_joining.DMSeries as dms
+from revolutionhtl.nhxx_tools import read_nhxx
 from revolutionhtl.nxTree import induced_colors
+from itertools import chain, product, combinations
 from src.polytomy_identification.TreePolytomies import TreePolytomies
 from revolutionhtl.parse_prt import load_all_hits_raw, normalize_scores
 
@@ -315,3 +317,84 @@ def read_newick_from_file(base_path, file_name):
         real_newick = f.read().strip()
 
     return real_newick
+
+
+# Toño's advice to work with the triplets part:
+# Convert to nxTree
+# -----------------
+def custom_tree(nhx):
+    T= read_nhxx(nhx)
+    for x in T:
+        T.nodes[x]['event']= 'S'
+        if T.out_degree(x) == 0:  # TODO: ask Toño if it is valid; CHANGES a leaf from 'noD_5_10_4_2|G17_7' to 'G17_7'
+            T.nodes[x]['label'] = T.nodes[x]['label'].split('|')[-1]
+    return T
+
+
+######################
+# Compue performance #
+######################
+def triple_performance(tree: nx.DiGraph, real_tree: nx.DiGraph):
+    # Todo: should the 'real_tree' be the first or second argument?
+    tree1_trples= set(get_triplets(tree, color='label'))
+    tree2_trples= set(get_triplets(real_tree, color='label'))
+    tree2_sets= set(map(frozenset, tree2_trples))
+
+    TP= tree1_trples . intersection( tree2_trples )
+    FP= tree1_trples - tree2_trples
+    FN= tree2_trples - tree1_trples
+    C= {X for X in FP if frozenset(X) in tree2_sets} # Contradictory triples
+
+    return len(TP), len(FP), len(FN), len(C)
+
+
+def get_triplets(tree, event='event', color= 'color', root_event= 'S', loss_leafs= 'X'):
+    """
+    return a tuple (a,b,c), where a and b are the ingroup
+    and c is the outgroup.
+    """
+    I= {} # Dictionary for induced leafs
+    for x in nx.dfs_postorder_nodes(tree):
+        if tree.out_degree(x) == 0:
+            if tree.nodes[x][color] == loss_leafs:
+                I[x]= {  }
+            else:
+                I[x]= { tree.nodes[x][color] }
+        else:
+            if x!=tree.root:
+                I[x]= set( chain.from_iterable((I[x1] for x1 in tree[x])) )
+            if tree.nodes[x][event] == root_event:
+                for triple in _get_triples_from_root(tree, x, I):
+                    yield triple
+
+
+def _get_triples_from_root(tree, node, I):
+    for x0, x1 in combinations(tree[node], 2):
+        for triple in chain(_get_triplets_from_groups(tree, x0, x1, I),
+                            _get_triplets_from_groups(tree, x1, x0, I)):
+            yield triple
+
+
+def _get_triplets_from_groups(tree, x_out, x_in, I):
+    P= combinations( I[x_in], 2 )
+    for (a,(b,c)) in product( I[x_out], P ):
+        if len({a,b,c})==3:
+            yield tuple(sorted((b,c)))+(a,)
+
+def get_precision_recall_contradiction(tree: nx.DiGraph, real_tree: nx.DiGraph) -> tuple[float, float, float]:
+    """
+    Computes precision, recall, and contradiction based on the comparison of two trees.
+
+    Args:
+        tree (nx.DiGraph): The a tree
+        real_tree (nx.DiGraph): The real tree
+
+    Returns:
+        tuple[float, float, float]: Precision, recall, and contradiction values.
+    """
+    tp, fp, fn, contradictory = triple_performance(tree, real_tree)
+    precision: float = tp / (tp+fp)
+    recall: float = tp / (tp+fn)
+    contradiction: float = contradictory / (tp+fn)
+
+    return precision, recall, contradiction
