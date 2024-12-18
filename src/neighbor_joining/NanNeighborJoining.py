@@ -154,7 +154,7 @@ def resolve_tree_with_nan(full_D: np.ndarray, full_taxa: list[str], root_name: s
 
     # Perform NJ on connected nodes
     tree = neighbor_joining(filtered_D, connected_taxa)
-    print(f"Tree: {tree}")
+    # print(f"Tree: {tree}")
 
     # Return tree and disconnected nodes
     return to_newick({"tree": tree, "disconnected_nodes": disconnected_nodes}, root_name)

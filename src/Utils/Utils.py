@@ -1,11 +1,13 @@
 import os
 import re
+import math
 import pandas
 import numpy as np
 from math import log
 import networkx as nx
 from Bio import Phylo
 from io import StringIO
+from pandas import read_csv
 import src.neighbor_joining.DMSeries as dms
 from revolutionhtl.nhxx_tools import read_nhxx
 from revolutionhtl.nxTree import induced_colors
@@ -381,20 +383,59 @@ def _get_triplets_from_groups(tree, x_out, x_in, I):
         if len({a,b,c})==3:
             yield tuple(sorted((b,c)))+(a,)
 
+
 def get_precision_recall_contradiction(tree: nx.DiGraph, real_tree: nx.DiGraph) -> tuple[float, float, float]:
     """
     Computes precision, recall, and contradiction based on the comparison of two trees.
 
     Args:
-        tree (nx.DiGraph): The a tree
-        real_tree (nx.DiGraph): The real tree
+        tree (nx.DiGraph): The tree to evaluate.
+        real_tree (nx.DiGraph): The real (ground-truth) tree.
 
     Returns:
         tuple[float, float, float]: Precision, recall, and contradiction values.
+                                      NaN is returned for undefined values (e.g., division by zero).
     """
     tp, fp, fn, contradictory = triple_performance(tree, real_tree)
-    precision: float = tp / (tp+fp)
-    recall: float = tp / (tp+fn)
-    contradiction: float = contradictory / (tp+fn)
+
+    # Compute precision, recall, and contradiction with safe division
+    precision: float = tp / (tp + fp) if (tp + fp) > 0 else math.nan
+    recall: float = tp / (tp + fn) if (tp + fn) > 0 else math.nan
+    contradiction: float = contradictory / (tp + fn) if (tp + fn) > 0 else math.nan
 
     return precision, recall, contradiction
+
+
+def is_diagonal_zero_and_nan_elsewhere(D: np.ndarray) -> bool:
+    """
+    Checks if a matrix has zeros on the diagonal and NaN everywhere else.
+
+    Args:
+        D (np.ndarray): The input matrix.
+
+    Returns:
+        bool: True if the matrix satisfies the condition, False otherwise.
+    """
+
+    # Check if diagonal elements are all zeros
+    diagonal_zero = np.all(np.diag(D) == 0)
+
+    # Create a mask for the off-diagonal elements
+    off_diagonal_mask = ~np.eye(D.shape[0], dtype=bool)  # True for off-diagonal elements
+
+    # Check if off-diagonal elements are all NaN
+    off_diagonal_nan = np.all(np.isnan(D[off_diagonal_mask]))
+
+    return diagonal_zero and off_diagonal_nan
+
+
+def load_distance_pairs_and_trees_with_polytomies(
+        hits_path: str, trees_path: str
+) -> tuple[pandas.Series, list[TreePolytomies]]:
+    # Load the hits and gtrees data from input files
+    distance_pairs = load_hits_compute_distance_pairs(hits_path)  # Load distances
+    gTrees = read_csv(trees_path, sep='\t')                             # Load trees
+    gTrees = gTrees.set_index('OG').tree.apply(read_nhxx)               # Load trees
+    trees_with_polytomies = get_trees_with_polytomies(gTrees)     # Identify those trees with polytomies
+
+    return distance_pairs, trees_with_polytomies
