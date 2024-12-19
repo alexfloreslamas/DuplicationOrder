@@ -7,9 +7,9 @@ import src.neighbor_joining.NanNeighborJoining as nnj
 
 def main():
     # File paths
-    hits_path = '../input/tl_project_alignment_all_vs_all/'
-    trees_path = '../input/tl_project.reconciliation.tsv'
-    real_trees_base_path = "../input/true_gene_trees/"
+    hits_path = '../../input/tl_project_alignment_all_vs_all/'
+    trees_path = '../../input/tl_project.reconciliation.tsv'
+    real_trees_base_path = "../../input/true_gene_trees/"
 
     distance_pairs, trees_with_polytomies = utils.load_distance_pairs_and_trees_with_polytomies(hits_path, trees_path)
 
